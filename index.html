@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capitalization Quest!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* GAME UI STYLES */
+        #game-ui {
+            background: white;
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 8px solid #4CAF50;
+            width: 80%;
+            max-width: 500px;
+            z-index: 10;
+        }
+
+        h1 { color: #ff6f61; font-size: 2.5rem; margin: 0 0 10px 0; }
+        #score-board { font-size: 1.5rem; color: #4a90e2; margin-bottom: 20px; }
+        #prompt { font-size: 1.8rem; margin-bottom: 20px; min-height: 60px; }
+        .target-text { font-size: 3.5rem; font-weight: bold; color: #333; }
+        
+        input {
+            font-size: 2.5rem;
+            width: 220px;
+            padding: 10px;
+            text-align: center;
+            border: 4px solid #ddd;
+            border-radius: 15px;
+            outline: none;
+        }
+
+        /* CELEBRATION STYLES (Hidden by default) */
+        #celebration-screen {
+            display: none; /* Hidden until score is 30 */
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #0d1117;
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .winner-text {
+            font-family: 'Anton', sans-serif;
+            font-size: clamp(5rem, 15vw, 12rem);
+            font-weight: bold;
+            display: flex;
+            animation: tilt 2s ease-in-out infinite;
+        }
+
+        .winner-letter {
+            display: inline-block;
+            animation: colorCycle 1.5s infinite;
+            padding: 0 5px;
+        }
+
+        @keyframes colorCycle {
+            0%, 100% { color: #2196F3; text-shadow: 0 0 20px #2196F3; }
+            33%      { color: #F44336; text-shadow: 0 0 20px #F44336; }
+            66%      { color: #4CAF50; text-shadow: 0 0 20px #4CAF50; }
+        }
+
+        @keyframes tilt {
+            0%, 100% { transform: rotate(-8deg) scale(1); }
+            50%      { transform: rotate(8deg) scale(1.1); }
+        }
+
+        #tsparticles {
+            position: fixed;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            z-index: 50;
+        }
+
+        /* Utility */
+        .correct-pop { animation: pop 0.4s ease; }
+        @keyframes pop {
+            50% { transform: scale(1.1); background-color: #d4edda; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-ui">
+    <h1>ABC Game!</h1>
+    <div id="score-board">Stars: <span id="score">0</span> / <span id="totalneeded">0</span> </div>
+    <div id="prompt">
+        Type the <span style="color:red">upper case</span> letter: 
+        <div class="target-text" id="target">a</div>
+    </div>
+    <input type="text" id="user-input" autocomplete="off" autofocus>
+</div>
+
+<div id="celebration-screen">
+    <div id="tsparticles"></div>
+    <div class="winner-text" id="winner-word"></div>
+    <button onclick="location.reload()" style="margin-top: 50px; padding: 15px 30px; font-size: 1.5rem; cursor: pointer; border-radius: 10px; z-index: 110;">Play Again!</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-preset-fireworks@2/tsparticles.preset.fireworks.bundle.min.js"></script>
+
+<script>
+    let score = 0;
+	//Change this if you want the game to go less or more. The variable below shows how many they have to get correct to win.
+	const totalneeded =30;
+    const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    const properNouns = ['London','Sarah', 
+		'Monday', 'Tuesday','Wednesday','Thursday','Friday',
+		'Mr.Boles', 'Wellington',
+		'Earth', 'Jupiter', 'Mars', 'Venus', 'Mercury', 'Saturn', 'Uranus', 'Neptune',
+		'Disney World', 'Nintendo',
+		'New York', 'Lexington','Frankfort', 'Louisville',
+		'January','February','March','April','May','June','July','August','September','October','November','December'];
+    const targetDisplay = document.getElementById('target');
+	const totalDisplay = document.getElementById('totalneeded');
+    const userInput = document.getElementById('user-input');
+    const scoreDisplay = document.getElementById('score');
+    const promptText = document.getElementById('prompt');
+    const gameUI = document.getElementById('game-ui');
+    const winnerScreen = document.getElementById('celebration-screen');
+
+    let currentTarget = '';
+    let isProperNounMode = false;
+	totalDisplay.innerText= totalneeded; 	
+	
+
+    function nextQuestion() {
+        userInput.value = '';
+        userInput.focus();
+        
+        // If they have 20 or more points, start showing proper nouns. Change the number below if you want to have less single letters or more.
+        if (score >= 20) {
+            isProperNounMode = true;
+            currentTarget = properNouns[Math.floor(Math.random() * properNouns.length)];
+            promptText.innerHTML = `Type the <b>Name</b> correctly: <div class="target-text">${currentTarget.toLowerCase()}</div>`; 
+        } else {
+            isProperNounMode = false; 
+            currentTarget = letters[Math.floor(Math.random() * letters.length)];
+            promptText.innerHTML = `Type the <span style="color:red">upper case</span> version of: <div class="target-text">${currentTarget}'</div>; 
+       
+		}
+		
+		
+	}
+
+    userInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        const goal = isProperNounMode ? currentTarget : currentTarget.toUpperCase();
+        if (val === goal) {
+            score++;
+            scoreDisplay.innerText = score;
+            if (score >= totalneeded) {
+                showWinnerScreen();
+            } else {
+                gameUI.classList.add('correct-pop');
+                setTimeout(() => {
+                    gameUI.classList.remove('correct-pop');
+                    nextQuestion();
+                }, 400);
+            }
+        }
+    });
+
+    function showWinnerScreen() {
+        // Hide Game, Show Winner
+        gameUI.style.display = 'none';
+        document.body.style.backgroundColor = '#0d1117';
+        winnerScreen.style.display = 'flex';
+
+        // Build the animated WINNER text
+        const word = "WINNER";
+        const wordContainer = document.getElementById('winner-word');
+        word.split('').forEach((char, index) => {
+            const span = document.createElement('span');
+            span.innerText = char;
+            span.className = 'winner-letter';
+            span.style.animationDelay = `${index * 0.2}s`;
+            wordContainer.appendChild(span);
+        });
+
+        // Trigger Fireworks
+        tsParticles.load("tsparticles", {
+            preset: "fireworks",
+            emitters: {
+                direction: "top",
+                life: { count: 0, duration: 0.1, delay: 0.1 },
+                rate: { delay: 0.15, quantity: 1 },
+                position: { x: 50, y: 100 }
+            }
+        });
+    }
+
+    // Start
+    nextQuestion();
+</script>
+
+</body>
+</html>
