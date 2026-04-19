@@ -123,7 +123,6 @@
 
 <script>
     let score = 0;
-	//Change this if you want the game to go less or more. The variable below shows how many they have to get correct to win.
 	const totalneeded =30;
     const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
     const properNouns = ['London','Sarah', 
@@ -143,34 +142,32 @@
 
     let currentTarget = '';
     let isProperNounMode = false;
-	totalDisplay.innerText= totalneeded; 	
-	
+	totalDisplay.innerText= totalneeded;
 
     function nextQuestion() {
         userInput.value = '';
         userInput.focus();
         
-        // If they have 20 or more points, start showing proper nouns. Change the number below if you want to have less single letters or more.
-        if (score >= 20) {
+        // If they have 15 or more points, start showing proper nouns
+        if (score >= 15) {
             isProperNounMode = true;
             currentTarget = properNouns[Math.floor(Math.random() * properNouns.length)];
-            promptText.innerHTML = `Type the <b>Name</b> correctly: <div class="target-text">${currentTarget.toLowerCase()}</div>`; 
+            promptText.innerHTML = `Type the <b>Name</b> correctly: <div class="target-text">${currentTarget.toLowerCase()}</div>`;
         } else {
-            isProperNounMode = false; 
+            isProperNounMode = false;
             currentTarget = letters[Math.floor(Math.random() * letters.length)];
-            promptText.innerHTML = `Type the <span style="color:red">upper case</span> version of: <div class="target-text">${currentTarget}'</div>; 
-       
-		}
-		
-		
-	}
+            promptText.innerHTML = `Type the <span style="color:red">upper case</span> version of: <div class="target-text">${currentTarget}</div>`;
+        }
+    }
 
     userInput.addEventListener('input', (e) => {
         const val = e.target.value;
         const goal = isProperNounMode ? currentTarget : currentTarget.toUpperCase();
+        
         if (val === goal) {
             score++;
             scoreDisplay.innerText = score;
+            
             if (score >= totalneeded) {
                 showWinnerScreen();
             } else {
