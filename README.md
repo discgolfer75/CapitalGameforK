@@ -1,0 +1,2 @@
+I have searched all over for a decent way to teach my primary classes how to type capital letters.  Pages that I used have now become paid sites and the cost is simply not worth it for the time I would use it.  I attempted writing this 
+with Javascript and HTML compbined.  It started with a Gemini prompt and then I have tweaked it.  The final page is supposed to have the word Winner on it, but I haven't figured out why it isn't displaying yet.
